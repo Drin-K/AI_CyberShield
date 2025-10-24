@@ -1,40 +1,37 @@
+# client_example.py
 import requests
+import base64
+import time
 import uuid
-from dns_tunnel_lib import chunk_bytes, encode_chunk
+import os
 
-SERVER = 'http://localhost:8053'
-CHUNK_SIZE = 1000  # bytes per chunk (tweak for tests)
+SERVER = os.environ.get("SIM_SERVER", "http://localhost:8053")
+ENDPOINT = f"{SERVER}/api/sim/send_chunk"
 
-def send_message(payload_bytes: bytes):
-    message_id = None
-    chunks = list(chunk_bytes(payload_bytes, CHUNK_SIZE))
+def send_message(payload_bytes, chunk_size=100):
+    message_id = str(uuid.uuid4())
+    chunks = [payload_bytes[i:i+chunk_size] for i in range(0, len(payload_bytes), chunk_size)]
     total = len(chunks)
-
-    for idx, chunk in enumerate(chunks):
-        payload_b64 = encode_chunk(chunk)
+    for idx, c in enumerate(chunks):
+        b64 = base64.b64encode(c).decode()
         data = {
-            'message_id': message_id,  # None for first request to get an id
-            'chunk_index': idx,
-            'total_chunks': total,
-            'payload_b64': payload_b64
+            "message_id": message_id,
+            "chunk_index": idx,
+            "total_chunks": total,
+            "payload_b64": b64,
+            "client_id": "dev-42",
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         }
+        resp = requests.post(ENDPOINT, json=data)
+        print("Sent chunk", idx, "resp", resp.status_code, resp.text)
+        time.sleep(0.15)
 
-        resp = requests.post(SERVER + '/api/sim/send_chunk', json=data)
-        if resp.status_code in (200, 202):
-            j = resp.json()
-            message_id = j.get('message_id')
-            print(f"Sent chunk {idx+1}/{total}, server status: {j.get('status')}")
-        else:
-            print('Error from server:', resp.status_code, resp.text)
-            return None
+if __name__ == "__main__":
+    text = ("Hello user, this is a normal message. " * 20).encode()
+    print("Sending benign example...")
+    send_message(text, chunk_size=200)
 
-    # poll for completion (optional)
-    if message_id:
-        status = requests.get(SERVER + f'/api/sim/status/{message_id}').json()
-        print('final status:', status)
-        rec = requests.get(SERVER + f'/api/sim/reconstruct/{message_id}')
-        print('reconstruct status:', rec.status_code, rec.text)
-
-if __name__ == '__main__':
-    sample = b'This is a demo payload for the dns-tunnel mock. ' * 20
-    send_message(sample)
+    import os
+    rand = os.urandom(1200)
+    print("Sending malicious-like example...")
+    send_message(rand, chunk_size=80)

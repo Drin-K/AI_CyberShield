@@ -1,110 +1,120 @@
 # server.py
-import base64
-import uuid
-import time
-import logging
 from flask import Flask, request, jsonify
-from threading import Lock
+from dns_tunnel_lib.tunnel import extract_features_from_chunks
+import traceback
+import os
+import joblib
+import threading
+import time
 
 app = Flask(__name__)
-LOCK = Lock()
-MESSAGES = {}
 
-@app.route('/api/sim/send_chunk', methods=['POST'])
-def send_chunk():
-    """
-    Accepts JSON:
-    {
-        "message_id": "<id>" or null to request new id,
-        "chunk_index": 0,
-        "total_chunks": 3,
-        "payload_b64": "<base64 string>"
-    }
-    """
-    data = request.get_json() or {}
-    mid = data.get('message_id')
-    idx = data.get('chunk_index')
-    total = data.get('total_chunks')
-    payload_b64 = data.get('payload_b64')
+STORE = {}
+LOCK = threading.Lock()
 
-    # Basic validation
-    if payload_b64 is None:
-        return jsonify({'error': 'missing payload_b64'}), 400
-    if idx is None or total is None:
-        return jsonify({'error': 'chunk_index and total_chunks required'}), 400
-
-    # If client asks for a new message_id
-    if not mid:
-        mid = str(uuid.uuid4())
-
+MODEL_PATH = os.environ.get("MODEL_PATH", "model.pkl")
+model = None
+if os.path.exists(MODEL_PATH):
     try:
-        raw = base64.b64decode(payload_b64)
+        model = joblib.load(MODEL_PATH)
+        print("Loaded model:", MODEL_PATH)
     except Exception as e:
-        return jsonify({'error': 'invalid base64', 'detail': str(e)}), 400
+        print("Failed to load model:", e)
 
-    with LOCK:
-        info = MESSAGES.setdefault(
-            mid, {'chunks': {}, 'total': int(total), 'last_seen': time.time()})
-        info['chunks'][int(idx)] = raw
-        info['last_seen'] = time.time()
+PHISHING_URL = os.environ.get("PHISHING_SERVICE_URL")
+ALERT_THRESHOLD = float(os.environ.get("ALERT_THRESHOLD", "0.6"))
 
-    logging.info(f"Received chunk {idx + 1}/{total} for message {mid}")
+@app.route("/api/sim/send_chunk", methods=["POST"])
+def send_chunk():
+    try:
+        data = request.get_json() or {}
+        mid = data.get("message_id")
+        idx = int(data.get("chunk_index", 0))
+        total = int(data.get("total_chunks", 1))
+        payload_b64 = data.get("payload_b64", "")
+        client_id = data.get("client_id")
+        ts = data.get("timestamp")
 
-    # If complete -> reassemble and return full payload (base64)
-    if len(info['chunks']) == info['total']:
-        parts = [info['chunks'][i] for i in range(info['total'])]
-        full = b''.join(parts)
-        reconstructed_b64 = base64.b64encode(full).decode()
-        # optional: remove from store after reconstruction
-        del MESSAGES[mid]
-        return jsonify({
-            'status': 'complete',
-            'message_id': mid,
-            'reconstructed_b64': reconstructed_b64
-        }), 200
+        if not mid:
+            return jsonify({"error":"missing message_id"}), 400
 
-    return jsonify({
-        'status': 'received',
-        'message_id': mid,
-        'received_chunks': len(info['chunks'])
-    }), 202
+        with LOCK:
+            info = STORE.setdefault(mid, {"chunks": {}, "total": total, "last_seen": time.time(), "client_id": client_id})
+            info["chunks"][idx] = {"payload_b64": payload_b64, "chunk_index": idx, "timestamp": ts}
+            received = len(info["chunks"])
+            info["last_seen"] = time.time()
 
+            if received == info["total"]:
+                chunks = [info["chunks"][i] for i in sorted(info["chunks"].keys())]
+                threading.Thread(target=process_reconstructed, args=(mid, chunks, info.get("client_id"))).start()
+                del STORE[mid]
+                return jsonify({"status":"complete","message_id": mid}), 200
 
-@app.route('/api/sim/status/<message_id>', methods=['GET'])
-def status(message_id):
-    with LOCK:
-        info = MESSAGES.get(message_id)
-        if not info:
-            return jsonify({'status': 'not_found'}), 404
-        return jsonify({
-            'status': 'in_progress',
-            'received_chunks': len(info['chunks']),
-            'total': info['total']
-        }), 200
+        return jsonify({"status":"received","message_id":mid,"received_chunks":received}), 202
 
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error":"internal","detail":str(e)}), 500
 
-@app.route('/api/sim/reconstruct/<message_id>', methods=['GET'])
-def reconstruct(message_id):
-    """Return reconstructed base64 if the message is complete. (Optional endpoint)"""
-    with LOCK:
-        info = MESSAGES.get(message_id)
-        if not info:
-            return jsonify({'status': 'not_found'}), 404
-        if len(info['chunks']) != info['total']:
-            return jsonify({
-                'status': 'incomplete',
-                'received_chunks': len(info['chunks']),
-                'total': info['total']
-            }), 202
-        parts = [info['chunks'][i] for i in range(info['total'])]
-        full = b''.join(parts)
-        reconstructed_b64 = base64.b64encode(full).decode()
-        return jsonify({
-            'status': 'complete',
-            'message_id': message_id,
-            'reconstructed_b64': reconstructed_b64
-        }), 200
+def process_reconstructed(message_id, chunks, client_id=None):
+    try:
+        features, reassembled = extract_features_from_chunks(chunks)
+        vec = [
+            features["chunk_count"],
+            features["avg_chunk_size"],
+            features["std_chunk_size"],
+            features["total_bytes"],
+            features["interarrival_mean"],
+            features["duration"],
+            features["entropy"],
+            features["printable_ratio"]
+        ]
+        score = None
+        reasons = []
+        if model:
+            prob = model.predict_proba([vec])[0]
+            score = float(prob[1])
+            reasons.append("ml_model")
+        else:
+            score = heuristic_score_from_features(features)
+            reasons.append("heuristic_fallback")
 
+        alert = {
+            "message_id": message_id,
+            "client_id": client_id,
+            "features": features,
+            "score": score,
+            "reasons": reasons,
+            "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8053, debug=True)
+        print("Processed message:", message_id, "score:", score)
+        if score >= ALERT_THRESHOLD and PHISHING_URL:
+            try:
+                import requests
+                requests.post(PHISHING_URL, json=alert, timeout=3)
+            except Exception as e:
+                print("Failed to POST alert:", e)
+
+    except Exception:
+        traceback.print_exc()
+
+def heuristic_score_from_features(f):
+    score = 0.0
+    if f["chunk_count"] >= 6:
+        score += 0.4
+    if f["avg_chunk_size"] < 150:
+        score += 0.25
+    if f["entropy"] > 4.0:
+        score += 0.2
+    if f["printable_ratio"] < 0.5:
+        score += 0.2
+    return min(score, 1.0)
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"ok": True, "model_loaded": bool(model)})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8053))
+    app.run(host="0.0.0.0", port=port, debug=True)
