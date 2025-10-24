@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  phishing:
+    build:
+      context: ../phishing-service
+    container_name: phishing_service
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../phishing-service:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - app-net
+
+  dns_tunnel:
+    build:
+      context: ../dns-tunnel-service
+    container_name: dns_tunnel_service
+    ports:
+      - "8053:8053"
+    volumes:
+      - ../dns-tunnel-service:/app
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
