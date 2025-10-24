@@ -1,94 +1,113 @@
 # phish_model.py
-from urllib.parse import urlparse
-import tldextract, re, math
-from collections import Counter
-import os, joblib, pandas as pd
+import os
+import re
+import math
+import joblib
 
-# --- helpers (entropy etc.) ---
-def shannon_entropy(s: str) -> float:
-    if not s:
-        return 0.0
-    cnt = Counter(s)
-    probs = [v / len(s) for v in cnt.values()]
-    import math
-    return -sum(p * math.log2(p) for p in probs)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "phish_model.joblib")
 
-def url_lexical_features(url: str) -> dict:
+_artifacts = None
+if os.path.exists(MODEL_PATH):
     try:
-        p = urlparse(url if url.startswith(("http://","https://")) else "http://" + url)
+        _artifacts = joblib.load(MODEL_PATH)
+        tfidf = _artifacts.get("tfidf")
+        scaler = _artifacts.get("scaler")
+        clf = _artifacts.get("clf")
+        meta = _artifacts.get("meta", {})
+        FREE_DOMAINS = set(meta.get("free_domains", []))
+        print("phish_model: loaded artifacts")
+    except Exception as e:
+        print("phish_model: failed loading model:", e)
+        tfidf = scaler = clf = None
+        FREE_DOMAINS = set()
+else:
+    tfidf = scaler = clf = None
+    FREE_DOMAINS = set()
+
+def extract_links(text):
+    return re.findall(r"https?://[^\s)\"'>]+", text or "")
+
+def host_entropy_from_url(url):
+    try:
+        from urllib.parse import urlparse
+        h = urlparse(url).hostname or ""
+        if not h: return 0.0
+        counts = {}
+        for c in h:
+            counts[c] = counts.get(c, 0) + 1
+        probs = [v/len(h) for v in counts.values()]
+        ent = -sum(p * math.log(p, 2) for p in probs)
+        return ent
     except Exception:
-        p = urlparse("http://" + url.replace(" ", ""))
-    ext = tldextract.extract(p.netloc + p.path)
-    host = p.netloc or ""
-    path = p.path or ''
-    q = p.query or ''
-    features = {}
-    features['len_url'] = len(url)
-    features['host_len'] = len(host)
-    features['path_len'] = len(path)
-    features['query_len'] = len(q)
-    features['n_subdomains'] = 0 if ext.subdomain=='' else len(ext.subdomain.split('.'))
-    features['has_ip'] = 1 if re.match(r'^\d+\.\d+\.\d+\.\d+$', host) else 0
-    features['count_dashes'] = url.count('-')
-    features['count_at'] = url.count('@')
-    features['count_percent'] = url.count('%')
-    features['count_digits'] = sum(c.isdigit() for c in url)
-    features['entropy_host'] = shannon_entropy(host)
-    features['entropy_path'] = shannon_entropy(path)
-    return features
+        return 0.0
 
-# --- simple heuristic score (kept for interpretability) ---
-SUSPICIOUS_TOKENS = ["login","signin","bank","secure","update","verify","confirm","account","ebank","paypal"]
+def sender_domain(email_or_domain):
+    if not isinstance(email_or_domain, str) or email_or_domain.strip() == "":
+        return ""
+    if "@" in email_or_domain:
+        return email_or_domain.split("@")[-1].lower().strip()
+    return email_or_domain.lower().strip()
 
-def heuristic_score_and_reasons(text: str):
-    # Works for URL or general text (will search tokens)
+def extract_sender_features(sender):
+    d = sender_domain(sender)
+    sender_domain_len = len(d)
+    sender_has_digits = int(bool(re.search(r'\d', d)))
+    sender_is_free = int(d in FREE_DOMAINS)
+    sender_tld_unusual = int(d.endswith(('.tk','.xyz','.top','.club','.info')) or d.endswith('.ru'))
+    return {
+        "sender_domain_len": sender_domain_len,
+        "sender_has_digits": sender_has_digits,
+        "sender_is_free": sender_is_free,
+        "sender_tld_unusual": sender_tld_unusual
+    }
+
+def heuristic_score_and_reasons(text):
+    text = (text or "").lower()
     reasons = []
     score = 0.0
-    lower = (text or "").lower()
-    hits = [t for t in SUSPICIOUS_TOKENS if t in lower]
-    if hits:
-        reasons.append(f"contains suspicious token(s): {', '.join(hits)}")
+    if re.search(r'\b(verify|confirm|login|password|secure)\b', text):
+        reasons.append("contains-token:verify/confirm/login")
         score += 0.35
-    # if looks like URL, add lexical heuristics
-    url_like = False
-    if text.startswith(("http://","https://","www.")) or "://" in text:
-        url_like = True
-    if url_like:
-        try:
-            f = url_lexical_features(text)
-            if f['len_url'] > 100:
-                reasons.append("very long URL")
-                score += 0.15
-            if f['count_at'] > 0:
-                reasons.append("contains '@' character")
-                score += 0.12
-            if f['has_ip']:
-                reasons.append("host is an IP address")
-                score += 0.18
-            if f['entropy_host'] > 3.8:
-                reasons.append("high entropy in host")
-                score += 0.18
-        except Exception:
-            pass
-
-    score = min(1.0, score)
+    if re.search(r'https?://', text):
+        reasons.append("contains-url")
+        score += 0.25
+    if re.search(r'\b(bank|account|payment)\b', text):
+        reasons.append("contains-credential-words")
+        score += 0.2
+    urls = extract_links(text)
+    if urls:
+        ent = host_entropy_from_url(urls[0])
+        if ent > 3.0:
+            reasons.append("high entropy in host")
+            score += 0.2
+    score = max(0.0, min(1.0, score))
     label = "phishing" if score >= 0.5 else "benign"
     return score, label, reasons
 
-# --- ML model loader (optional) ---
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "model", "text_model.pkl")
-_model = None
-def load_model():
-    global _model
-    if _model is None and os.path.exists(MODEL_PATH):
-        _model = joblib.load(MODEL_PATH)
-    return _model
-
-def predict_text_ml(subject: str, body: str):
-    clf = load_model()
-    if not clf:
+def predict_text_ml(subject, body, sender=""):
+    """
+    Returns (proba, label) or None if model not available.
+    """
+    if clf is None or tfidf is None or scaler is None:
         return None
-    df = pd.DataFrame([{"subject": subject, "body": body}])
-    proba = clf.predict_proba(df)[:,1][0]
-    label = "phishing" if proba >= 0.5 else "benign"
-    return proba, label
+    try:
+        text = ((subject or "") + " " + (body or "")).lower()
+        X_text = tfidf.transform([text])
+        # numeric features must match training order
+        num_links = len(extract_links(body or ""))
+        has_login = 1 if re.search(r'\b(verify|confirm|login|password|secure)\b', (body or ""), flags=re.I) else 0
+        links = extract_links(body or "")
+        first_entropy = host_entropy_from_url(links[0]) if links else 0.0
+        sfeat = extract_sender_features(sender or "")
+        import numpy as np
+        from scipy.sparse import hstack
+        X_num = scaler.transform([[num_links, has_login, first_entropy,
+                                   sfeat['sender_domain_len'], sfeat['sender_has_digits'],
+                                   sfeat['sender_is_free'], sfeat['sender_tld_unusual']]])
+        X = hstack([X_text, X_num])
+        proba = float(clf.predict_proba(X)[:,1][0])
+        label = "phishing" if proba >= 0.5 else "benign"
+        return proba, label
+    except Exception as e:
+        print("predict_text_ml error:", e)
+        return None
