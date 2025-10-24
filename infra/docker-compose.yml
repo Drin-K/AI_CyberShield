@@ -1,16 +1,42 @@
-
+version: "3.9"
 
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: phishingdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-net
+
   phishing:
     build:
       context: ../phishing-service
     container_name: phishing_service
+    depends_on:
+      - postgres
+    environment:
+      # lidhja me DB brenda rrjetit të docker: hosti = "postgres"
+      - DATABASE_URL=postgresql://admin:1234@postgres:5432/phishingdb
+      - FLASK_ENV=development
+      # opsionale: API key për /api/phishing_alert (për të mos pranu injektime)
+      - PHISHING_ALERT_API_KEY=super_secret_123
+      # sa të ndikojë një DNS alert në final_score (0.0–1.0)
+      - SCORE_BUMP_FACTOR=0.15
+      # TTL i alarmeve në orë
+      - ALERT_TTL_HOURS=24
     ports:
       - "5000:5000"
     volumes:
       - ../phishing-service:/app
-    environment:
-      - FLASK_ENV=development
+    restart: always
     networks:
       - app-net
 
@@ -18,13 +44,26 @@ services:
     build:
       context: ../dns-tunnel-service
     container_name: dns_tunnel_service
+    depends_on:
+      - phishing
+    environment:
+      # URL i endpoint-it të phishing-service brenda rrjetit docker
+      - PHISHING_SERVICE_URL=http://phishing:5000/api/phishing_alert
+      # nëse ke vendosur API key në phishing-service, dërgoje edhe këtu
+      - PHISHING_ALERT_API_KEY=super_secret_123
+      # prag i alertit në dns_tunnel (nëse e përdor server.py të mëparshëm)
+      - ALERT_THRESHOLD=0.6
     ports:
       - "8053:8053"
     volumes:
       - ../dns-tunnel-service:/app
+    restart: always
     networks:
       - app-net
 
 networks:
   app-net:
     driver: bridge
+
+volumes:
+  postgres_data:
