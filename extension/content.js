@@ -77,6 +77,53 @@ function scanNow() {
     createBanner(response);
   });
 }
+function showDnsBanner(domain, score) {
+  const old = document.getElementById("dns-banner");
+  if (old) old.remove();
+
+  const banner = document.createElement("div");
+  banner.id = "dns-banner";
+  banner.style.background = "#ffe6e6";
+  banner.style.border = "1px solid #ff8080";
+  banner.style.padding = "10px";
+  banner.style.margin = "8px 0";
+  banner.style.borderRadius = "6px";
+  banner.style.fontFamily = "Arial";
+  banner.style.zIndex = "9999";
+  banner.innerHTML = `⚠️ <b style="color:#b30000">DNS tunneling detected!</b><br>
+  Domain: <b>${domain}</b> — Score: ${score}`;
+
+  const container = document.querySelector(".aeH") || document.body;
+  container.parentNode.insertBefore(banner, container);
+}
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.action === "dns_alert") {
+    const a = msg.alerts[0];
+    showDnsBanner(a.domain || "unknown", a.score.toFixed(2));
+  }
+});
+
+function showDnsBanner(domain, score) {
+  const old = document.getElementById("dns-banner");
+  if (old) old.remove();
+
+  const banner = document.createElement("div");
+  banner.id = "dns-banner";
+  banner.style.background = "#ffe6e6";
+  banner.style.border = "1px solid #ff8080";
+  banner.style.padding = "10px";
+  banner.style.margin = "8px 0";
+  banner.style.borderRadius = "6px";
+  banner.style.fontFamily = "Arial";
+  banner.style.zIndex = "9999";
+  banner.innerHTML = `⚠️ <b style="color:#b30000">DNS tunneling detected!</b><br>
+  Domain: <b>${domain}</b> — Score: ${score}`;
+
+  const container = document.querySelector(".aeH") || document.body;
+  container.parentNode.insertBefore(banner, container);
+}
+
+
 
 // Trigger scan every time user clicks in Gmail (wait for message render)
 document.addEventListener("click", () => {

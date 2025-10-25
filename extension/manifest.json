@@ -3,7 +3,7 @@
   "name": "PhishDetect Prototype",
   "version": "0.2",
   "description": "Detects phishing emails inside Gmail and displays a banner above the email.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage","notifications"],
   "host_permissions": [
     "http://127.0.0.1:5000/*",
     "http://localhost:5000/*"
