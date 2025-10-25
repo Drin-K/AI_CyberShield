@@ -4,12 +4,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
+COPY requirements.txt . 
 
-COPY requirements.txt .
+RUN apt-get update && apt-get install -y gcc libpq-dev build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# upgrade pip then install requirements
-RUN python -m pip install --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 

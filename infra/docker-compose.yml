@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # ---------------- PostgreSQL Database ----------------
   postgres:
     image: postgres:15
     container_name: postgres_db
@@ -16,6 +17,7 @@ services:
     networks:
       - app-net
 
+  # ---------------- Phishing Detection Service ----------------
   phishing:
     build:
       context: ../phishing-service
@@ -23,14 +25,10 @@ services:
     depends_on:
       - postgres
     environment:
-      # lidhja me DB brenda rrjetit të docker: hosti = "postgres"
-      - DATABASE_URL=postgresql://admin:1234@postgres:5432/phishingdb
+      - DATABASE_URL=postgresql://admin:1234@postgres:5432/phishingdb   # fix: use service name postgres
       - FLASK_ENV=development
-      # opsionale: API key për /api/phishing_alert (për të mos pranu injektime)
       - PHISHING_ALERT_API_KEY=super_secret_123
-      # sa të ndikojë një DNS alert në final_score (0.0–1.0)
       - SCORE_BUMP_FACTOR=0.15
-      # TTL i alarmeve në orë
       - ALERT_TTL_HOURS=24
     ports:
       - "5000:5000"
@@ -40,6 +38,7 @@ services:
     networks:
       - app-net
 
+  # ---------------- DNS Tunneling Detection Service ----------------
   dns_tunnel:
     build:
       context: ../dns-tunnel-service
@@ -47,11 +46,8 @@ services:
     depends_on:
       - phishing
     environment:
-      # URL i endpoint-it të phishing-service brenda rrjetit docker
-      - PHISHING_SERVICE_URL=http://phishing:5000/api/phishing_alert
-      # nëse ke vendosur API key në phishing-service, dërgoje edhe këtu
+      - PHISHING_SERVICE_URL=http://phishing:5000/api/phishing_alert     # fix: use service name phishing
       - PHISHING_ALERT_API_KEY=super_secret_123
-      # prag i alertit në dns_tunnel (nëse e përdor server.py të mëparshëm)
       - ALERT_THRESHOLD=0.6
     ports:
       - "8053:8053"
@@ -61,9 +57,11 @@ services:
     networks:
       - app-net
 
+# ---------------- Shared Docker Network ----------------
 networks:
   app-net:
     driver: bridge
 
+# ---------------- Persistent PostgreSQL Storage ----------------
 volumes:
   postgres_data:
