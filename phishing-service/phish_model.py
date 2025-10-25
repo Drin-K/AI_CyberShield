@@ -65,21 +65,31 @@ def heuristic_score_and_reasons(text):
     text = (text or "").lower()
     reasons = []
     score = 0.0
+
+    # token words (slightly reduced)
     if re.search(r'\b(verify|confirm|login|password|secure)\b', text):
         reasons.append("contains-token:verify/confirm/login")
-        score += 0.35
+        score += 0.30  # was 0.35
+
+    # URL presence (reduced)
     if re.search(r'https?://', text):
         reasons.append("contains-url")
-        score += 0.25
+        score += 0.15  # was 0.25
+
+    # banking keywords (reduced)
     if re.search(r'\b(bank|account|payment)\b', text):
         reasons.append("contains-credential-words")
-        score += 0.2
+        score += 0.15  # was 0.2
+
+    # entropy for URL host (reduced weight and threshold)
     urls = extract_links(text)
     if urls:
         ent = host_entropy_from_url(urls[0])
-        if ent > 3.0:
+        # lower threshold and weight so it triggers less aggressively
+        if ent > 3.5:               # previously > 3.0
             reasons.append("high entropy in host")
-            score += 0.2
+            score += 0.10          # was 0.2
+
     score = max(0.0, min(1.0, score))
     label = "phishing" if score >= 0.5 else "benign"
     return score, label, reasons

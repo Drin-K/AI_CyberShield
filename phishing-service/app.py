@@ -246,7 +246,7 @@ def scan_text():
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
+        print(final_score)
 
 # -----------------------
 # Health endpoint
