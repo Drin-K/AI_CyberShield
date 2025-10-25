@@ -19,6 +19,7 @@
     }
   ],
   "action": {
-    "default_title": "PhishDetect"
+    "default_title": "PhishDetect",
+    "default_icon": "icon128.png"
   }
 }

@@ -15,6 +15,7 @@ from db import engine, Base, get_db
 from models import DNSAlert
 from db_helpers import upsert_dns_alert, get_active_alerts
 from phish_model import heuristic_score_and_reasons
+from phish_model import predict_text_ml
 
 
 # -----------------------
@@ -167,8 +168,6 @@ def list_alerts():
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
-
 # -----------------------
 # Endpoint: scan text
 # -----------------------
@@ -180,6 +179,16 @@ def scan_text():
         subject = data.get("subject", "")
         body = data.get("body", "")
         combined_text = (subject + "\n" + body)[:10000]
+
+        # -------------------- ML PREDICTION --------------------
+        ml_result = predict_text_ml(subject, body)
+        ml_score = None
+        if ml_result:
+            ml_score = ml_result[0]  # probability
+            ml_label = ml_result[1]  # label
+        else:
+            ml_score = 0.0
+            ml_label = "benign"
 
         urls = extract_urls(combined_text)
         url_results = []
@@ -201,8 +210,15 @@ def scan_text():
             text_score, text_label, text_reasons = 0.0, "benign", []
         aggregated_reasons.extend(text_reasons or [])
 
-        final_score = max(max_url_score, text_score)
+        heuristic_score = max(max_url_score, text_score)
 
+        # -------------------- COMBINE ML + HEURISTICS --------------------
+        if ml_score is not None:
+            final_score = (ml_score * 0.15) + (heuristic_score * 0.85)
+        else:
+            final_score = heuristic_score
+
+        # -------------------- DNS ALERT CHECK --------------------
         alert_map = load_active_alerts_map(db)
         matched_alerts = []
         seen_domains = set()
@@ -228,15 +244,26 @@ def scan_text():
                     final_score = min(1.0, final_score + bump)
                     aggregated_reasons.append(f"dns alert for {adomain} (+{bump:.2f})")
 
-        final_label = "phishing" if final_score >= 0.5 else "benign"
+        # -------------------- FINAL LABEL --------------------
+        if final_score >= 0.8:
+            final_label = "phishing"
+        elif final_score >= 0.6:
+            final_label = "warning"
+        else:
+            final_label = "safe"
+
         dedup_reasons = []
         for r in aggregated_reasons:
             if r not in dedup_reasons:
                 dedup_reasons.append(r)
 
+        # -------------------- RESPONSE --------------------
+        print(f"ML={ml_score:.3f}, Heuristic={heuristic_score:.3f}, Final={final_score:.3f}, Label={final_label}")
         return jsonify({
             "final_score": round(final_score, 4),
             "final_label": final_label,
+            "ml_score": round(ml_score, 4) if ml_score is not None else None,
+            "heuristic_score": round(heuristic_score, 4),
             "reasons": dedup_reasons,
             "urls": url_results,
             "dns_alerts": matched_alerts
@@ -247,6 +274,8 @@ def scan_text():
     finally:
         db.close()
         print(final_score)
+
+
 
 # -----------------------
 # Health endpoint
