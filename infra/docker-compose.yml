@@ -46,7 +46,7 @@ services:
     depends_on:
       - phishing
     environment:
-      - PHISHING_SERVICE_URL=http://phishing:5000/api/phishing_alert     # fix: use service name phishing
+      - PHISHING_SERVICE_URL="http://127.0.0.1:5000/api/phishing_alert"    # fix: use service name phishing
       - PHISHING_ALERT_API_KEY=super_secret_123
       - ALERT_THRESHOLD=0.6
     ports:
