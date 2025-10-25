@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  # 🗄 PostgreSQL database
+  # ---------------- PostgreSQL Database ----------------
   postgres:
     image: postgres:15
     container_name: postgres_db
@@ -17,7 +17,7 @@ services:
     networks:
       - app-net
 
-  # 🧠 Phishing detection service (Flask + SQLAlchemy)
+  # ---------------- Phishing Detection Service ----------------
   phishing:
     build:
       context: ../phishing-service
@@ -25,8 +25,7 @@ services:
     depends_on:
       - postgres
     environment:
-      # Connect to Postgres inside the Docker network (hostname = postgres)
-      - DATABASE_URL=postgresql://admin:1234@postgres:5432/phishingdb
+      - DATABASE_URL=postgresql://admin:1234@postgres:5432/phishingdb   # fix: use service name postgres
       - FLASK_ENV=development
       - PHISHING_ALERT_API_KEY=super_secret_123
       - SCORE_BUMP_FACTOR=0.15
@@ -39,7 +38,7 @@ services:
     networks:
       - app-net
 
-  # 🌐 DNS tunneling detection service
+  # ---------------- DNS Tunneling Detection Service ----------------
   dns_tunnel:
     build:
       context: ../dns-tunnel-service
@@ -47,7 +46,7 @@ services:
     depends_on:
       - phishing
     environment:
-      - PHISHING_SERVICE_URL=http://phishing:5000/api/phishing_alert     # fix: use service name phishing
+      - PHISHING_SERVICE_URL="http://127.0.0.1:5000/api/phishing_alert"    # fix: use service name phishing
       - PHISHING_ALERT_API_KEY=super_secret_123
       - ALERT_THRESHOLD=0.6
     ports:
@@ -58,27 +57,11 @@ services:
     networks:
       - app-net
 
-  # 🧩 Test client to simulate DNS traffic
-  client:
-    build:
-      context: ../dns-tunnel-service
-    container_name: dns_client
-    depends_on:
-      - dns_tunnel
-    environment:
-      # This points to the internal docker DNS tunnel hostname
-      - SIM_SERVER=http://dns_tunnel:8053
-    command: ["python", "client_example.py"]
-    networks:
-      - app-net
-    # Disable automatic restart since it's just for testing
-    restart: "no"
-
-# 🕸 Shared bridge network
+# ---------------- Shared Docker Network ----------------
 networks:
   app-net:
     driver: bridge
 
-# 💾 Persistent volume for PostgreSQL data
+# ---------------- Persistent PostgreSQL Storage ----------------
 volumes:
   postgres_data:
