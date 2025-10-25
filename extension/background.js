@@ -61,21 +61,28 @@ setInterval(fetchDnsAlerts, 15000);
 
 // Handle phishing scan requests (existing logic)
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "scan_text") {
-    (async () => {
-      try {
-        const resp = await fetch("http://127.0.0.1:5000/api/scan_text", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(message.payload)
-        });
-        const json = await resp.json();
-        sendResponse(json);
-      } catch (err) {
-        console.error("Background fetch error:", err);
-        sendResponse({ error: err.message });
-      }
-    })();
-    return true;
-  }
+ if (message.action === "scan_text") {
+  (async () => {
+    try {
+      const resp = await fetch("http://127.0.0.1:5000/api/scan_text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message.payload)
+      });
+      const json = await resp.json();
+
+      // 👇 Add this mapping
+      json.label = json.final_label;
+      json.score = json.final_score;
+      console.log("Backend response:", json);
+
+      sendResponse(json);
+    } catch (err) {
+      console.error("Background fetch error:", err);
+      sendResponse({ error: err.message });
+    }
+  })();
+  return true;
+}
+
 });

@@ -7,7 +7,6 @@ function extractEmail() {
   const body = bodyEl.innerText || "";
   return { subject, body };
 }
-
 function createBanner(result) {
   const oldBanner = document.getElementById("phishdetect-banner");
   if (oldBanner) oldBanner.remove();
@@ -31,15 +30,28 @@ function createBanner(result) {
   const right = document.createElement("div");
   const msg = document.createElement("div");
 
-  if (result.label === "phishing") {
-    banner.style.background = "#ffe6e6";
-    banner.style.border = "1px solid #ff8080";
-    msg.innerHTML = `⚠️ <b style="color:#b30000">Phishing detected!</b> — ${result.reasons.join(", ")}`;
-  } else {
-    banner.style.background = "#e6ffe6";
-    banner.style.border = "1px solid #7fd67f";
-    msg.innerHTML = `✅ <b style="color:#007500">No phishing detected.</b> — Likely safe email.`;
+  const score = result.final_score || result.score || 0;
+  let level = "safe";
+  let color = "#e6ffe6";
+  let border = "#7fd67f";
+  let text = `✅ <b style="color:#007500">Safe email.</b> — Likely legitimate.`
+
+  if (score >= 0.5 && score < 0.8) {
+    level = "warning";
+    color = "#fff3cd";
+    border = "#ffcc00";
+    text = `⚠️ <b style="color:#b38f00">Warning:</b> This email seems suspicious.`;
+  } else if (score >= 0.8) {
+    level = "phishing";
+    color = "#ffe6e6";
+    border = "#ff8080";
+    text = `🚨 <b style="color:#b30000">Phishing detected!</b>`;
   }
+
+  banner.style.background = color;
+  banner.style.border = `1px solid ${border}`;
+
+  msg.innerHTML = `${text}<br><b>Score:</b> ${score.toFixed(2)} — ${result.reasons?.join(", ") || ""}`;
 
   const closeBtn = document.createElement("button");
   closeBtn.textContent = "×";
@@ -57,6 +69,8 @@ function createBanner(result) {
 
   const container = document.querySelector(".aeH") || document.querySelector(".ii") || document.body;
   container.parentNode.insertBefore(banner, container);
+
+  console.log(`[PhishDetect] Banner shown: ${level.toUpperCase()} (score=${score})`);
 }
 
 function scanNow() {
@@ -77,6 +91,8 @@ function scanNow() {
     createBanner(response);
   });
 }
+
+// DNS tunneling alert banner
 function showDnsBanner(domain, score) {
   const old = document.getElementById("dns-banner");
   if (old) old.remove();
@@ -96,6 +112,8 @@ function showDnsBanner(domain, score) {
   const container = document.querySelector(".aeH") || document.body;
   container.parentNode.insertBefore(banner, container);
 }
+
+// Listen for DNS alerts from background.js
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === "dns_alert") {
     const a = msg.alerts[0];
@@ -103,29 +121,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
-function showDnsBanner(domain, score) {
-  const old = document.getElementById("dns-banner");
-  if (old) old.remove();
-
-  const banner = document.createElement("div");
-  banner.id = "dns-banner";
-  banner.style.background = "#ffe6e6";
-  banner.style.border = "1px solid #ff8080";
-  banner.style.padding = "10px";
-  banner.style.margin = "8px 0";
-  banner.style.borderRadius = "6px";
-  banner.style.fontFamily = "Arial";
-  banner.style.zIndex = "9999";
-  banner.innerHTML = `⚠️ <b style="color:#b30000">DNS tunneling detected!</b><br>
-  Domain: <b>${domain}</b> — Score: ${score}`;
-
-  const container = document.querySelector(".aeH") || document.body;
-  container.parentNode.insertBefore(banner, container);
-}
-
-
-
-// Trigger scan every time user clicks in Gmail (wait for message render)
+// Trigger scan every time user clicks inside Gmail
 document.addEventListener("click", () => {
   setTimeout(scanNow, 800);
 });
