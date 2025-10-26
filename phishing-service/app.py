@@ -24,7 +24,7 @@ SOC_EMAIL = "bardh.tahiri@student.uni-pr.edu"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USER = "bardhtahiri15@gmail.com"
-SMTP_PASS = "pobm iejj ogab zkud"  # app password
+SMTP_PASS = ""  # app password
 SMTP_USE_TLS = True
 
 
