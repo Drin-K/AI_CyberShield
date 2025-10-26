@@ -17,6 +17,16 @@ from db_helpers import upsert_dns_alert, get_active_alerts
 from phish_model import heuristic_score_and_reasons
 from phish_model import predict_text_ml
 
+import smtplib
+from email.mime.text import MIMEText
+
+SOC_EMAIL = "bardh.tahiri@student.uni-pr.edu"
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "bardhtahiri15@gmail.com"
+SMTP_PASS = "pobm iejj ogab zkud"  # app password
+SMTP_USE_TLS = True
+
 
 # -----------------------
 # DEBUG STARTUP PRINTS
@@ -279,7 +289,61 @@ def scan_text():
         db.close()
         print(final_score)
 
+@app.route("/api/report_to_soc", methods=["POST"])
+def report_to_soc():
+    """
+    Accepts JSON: { "domain": "...", "subject": "...", "body": "...", "reason": "..." }
+    Sends an email to SOC_EMAIL but DOES NOT quarantine.
+    """
+    data = request.get_json(silent=True) or {}
+    domain = data.get("domain")
+    subject = data.get("subject", "PhishDetect SOC report")
+    body = data.get("body", "")
+    reason = data.get("reason", "Reported by user via PhishDetect")
 
+    if not domain:
+        return jsonify({"error": "missing domain"}), 400
+
+    text = f"""PhishDetect Report
+
+Domain: {domain}
+Reason: {reason}
+
+Original subject: {subject}
+
+Original body:
+{body}
+
+(Reported at: {datetime.utcnow().isoformat()} UTC)
+"""
+    msg = MIMEText(text)
+    msg["Subject"] = f"[PhishDetect] SOC report: {domain}"
+    msg["From"] = os.getenv("ALERT_FROM", "noreply@phishdetect.local")
+    msg["To"] = SOC_EMAIL
+
+    try:
+        if SMTP_USER and SMTP_PASS:
+            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+            if SMTP_USE_TLS:
+                server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+            server.quit()
+        else:
+            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+            server.send_message(msg)
+            server.quit()
+
+        print(f"📧 SOC report sent for domain {domain} -> {SOC_EMAIL}")
+        return jsonify({"status": "ok", "sent_to": SOC_EMAIL}), 200
+    except Exception as e:
+        print("⚠️ Failed to send SOC email:", e)
+        try:
+            with open("soc_reports.log", "a", encoding="utf-8") as f:
+                f.write(f"{datetime.utcnow().isoformat()} REPORT domain={domain} reason={reason}\n")
+        except Exception as e2:
+            print("Failed to write local log:", e2)
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 # -----------------------
 # Health endpoint
@@ -313,6 +377,51 @@ def cleanup_expired_worker(interval_seconds=3600):
             print("[cleanup] error:", e)
         time.sleep(interval_seconds)
 
+@app.route("/api/quarantine", methods=["POST"])
+def quarantine_domain():
+    data = request.get_json() or {}
+    domain = data.get("domain")
+    reason = data.get("reason", "Manual quarantine from Chrome extension")
+
+    if not domain:
+        return jsonify({"error": "missing domain"}), 400
+
+    try:
+        db = next(get_db())
+        from models import DNSAlert
+        from datetime import datetime, timedelta
+
+        # vendos si quarantined (skadon pas 7 dite)
+        expires_at = datetime.utcnow() + timedelta(days=7)
+        alert = DNSAlert(
+            domain=domain.lower(),
+            score=1.0,
+            reasons=reason,
+            observed_at=datetime.utcnow(),
+            expires_at=expires_at,
+            report_count=999  # për ta dalluar si “manual quarantine”
+        )
+        db.add(alert)
+        db.commit()
+        db.close()
+
+        # --- (Opsionale) Dërgo email tek SOC ---
+        import smtplib
+        from email.mime.text import MIMEText
+        msg = MIMEText(f"Domain {domain} u karantinua.\nArsye: {reason}")
+        msg["Subject"] = f"[AI CyberShield] Domain quarantined: {domain}"
+        msg["From"] = "bardhtahiri15@gmail.com"
+        msg["To"] = "drinkurti26@gmail.com"
+        try:
+            with smtplib.SMTP("localhost") as s:
+                s.send_message(msg)
+            print(f"📧 Email dërguar SOC për {domain}")
+        except Exception as e:
+            print(f"⚠️ Nuk u dërgua emaili SOC: {e}")
+
+        return jsonify({"status": "ok", "domain": domain}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # -----------------------
 # Entry point

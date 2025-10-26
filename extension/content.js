@@ -61,7 +61,6 @@ function createBanner(result) {
   closeBtn.style.fontSize = "18px";
   closeBtn.style.marginLeft = "10px";
   closeBtn.onclick = () => banner.remove();
-
   left.appendChild(msg);
   right.appendChild(closeBtn);
   banner.appendChild(left);

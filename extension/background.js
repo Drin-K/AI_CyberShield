@@ -1,6 +1,9 @@
 console.log("Background service worker loaded");
 
-// Fetch DNS tunneling alerts every 15 seconds
+let dismissedUntil = 0;
+let permanentlyHandledDomains = new Set(); // ruaj domenet që janë raportuar te SOC
+
+// --- funksioni kryesor për marrjen e alarmeve DNS ---
 async function fetchDnsAlerts() {
   try {
     const resp = await fetch("http://127.0.0.1:5000/api/phishing_alerts", {
@@ -8,45 +11,41 @@ async function fetchDnsAlerts() {
       credentials: "omit"
     });
 
-    // if non-2xx -> log status and body text for debugging
     if (!resp.ok) {
-      const txt = await resp.text();
-      console.error("DNS alerts endpoint returned non-OK:", resp.status, resp.statusText, txt);
-      return;
-    }
-
-    // check content-type before parsing
-    const contentType = resp.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const txt = await resp.text();
-      console.error("DNS alerts: expected JSON but got:", contentType, txt);
+      console.error("DNS alerts endpoint returned non-OK:", resp.status);
       return;
     }
 
     const json = await resp.json();
     const alerts = json.alerts || [];
+    const now = Date.now();
 
-    if (alerts.length > 0) {
-      const highAlerts = alerts.filter(a => a.score >= 0.6);
+    // nëse është brenda periudhës së dismiss → mos shfaq
+    if (now < dismissedUntil) return;
+
+    // filtro alertat që NUK janë raportuar më parë
+    const unhandled = alerts.filter(a => !permanentlyHandledDomains.has(a.domain));
+
+    if (unhandled.length > 0) {
+      const highAlerts = unhandled.filter(a => a.score >= 0.6);
       if (highAlerts.length > 0) {
         console.log("⚠️ DNS tunneling detected:", highAlerts);
 
-        // notification
         chrome.notifications.create({
           type: "basic",
           iconUrl: "icon128.png",
           title: "DNS Tunneling Detected",
-          message: `Detected ${highAlerts.length} suspicious DNS event(s).`
-        });
-
-        // send to open Gmail tabs
-        chrome.tabs.query({ url: "*://mail.google.com/*" }, (tabs) => {
-          for (const tab of tabs) {
-            chrome.tabs.sendMessage(tab.id, {
-              action: "dns_alert",
-              alerts: highAlerts
-            });
-          }
+          message: `Detected ${highAlerts.length} suspicious DNS event(s).`,
+          buttons: [
+            { title: "📨 Send to SOC Team" },
+            { title: "Dismiss" }
+          ],
+          requireInteraction: true
+        }, (notificationId) => {
+          chrome.storage.local.set({
+            lastDnsAlerts: highAlerts,
+            lastNotificationId: notificationId
+          });
         });
       }
     }
@@ -55,34 +54,85 @@ async function fetchDnsAlerts() {
   }
 }
 
+// --- event për klikim të butonave të njoftimit ---
+chrome.notifications.onButtonClicked.addListener(async (notifId, btnIdx) => {
+  const stored = await chrome.storage.local.get(["lastDnsAlerts"]);
+  const alerts = stored.lastDnsAlerts || [];
+  const firstDomain = alerts[0]?.domain || "unknown-domain";
 
-// Run check every 15 seconds
-setInterval(fetchDnsAlerts, 15000);
-
-// Handle phishing scan requests (existing logic)
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
- if (message.action === "scan_text") {
-  (async () => {
+  if (btnIdx === 0) {
+    // 👉 Send to SOC Team → dërgo raport, mbyll njoftimin, MOS e shfaq më
     try {
-      const resp = await fetch("http://127.0.0.1:5000/api/scan_text", {
+      const resp = await fetch("http://127.0.0.1:5000/api/report_to_soc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message.payload)
+        body: JSON.stringify({
+          domain: firstDomain,
+          reason: "Automatic report from DNS tunneling alert"
+        })
       });
+
       const json = await resp.json();
+      chrome.notifications.clear(notifId);
 
-      // 👇 Add this mapping
-      json.label = json.final_label;
-      json.score = json.final_score;
-      console.log("Backend response:", json);
+      if (json.status === "ok") {
+        // Ruaj që ky domain është trajtuar → mos e shfaq më
+        permanentlyHandledDomains.add(firstDomain);
+        console.log(`✅ Domain ${firstDomain} reported to SOC, nuk shfaqet më.`);
 
-      sendResponse(json);
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: "icon128.png",
+          title: "✅ Report Sent",
+          message: `Domain ${firstDomain} reported to SOC Team.`
+        });
+      } else {
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: "icon128.png",
+          title: "⚠️ Report Failed",
+          message: json.error || "Unknown error."
+        });
+      }
     } catch (err) {
-      console.error("Background fetch error:", err);
-      sendResponse({ error: err.message });
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: "icon128.png",
+        title: "❌ Error",
+        message: err.message
+      });
     }
-  })();
-  return true;
-}
 
+  } else if (btnIdx === 1) {
+    // 👉 Dismiss → mbyll përkohësisht dhe lejo pas 25 sekondash
+    chrome.notifications.clear(notifId);
+    dismissedUntil = Date.now() + 25000; // 25 sekonda
+    console.log("🔕 Alerts dismissed për 25 sekonda — do të rikthehen më pas.");
+  }
+});
+
+// --- funksioni që ekzekutohet periodikisht çdo 15 sekonda ---
+setInterval(fetchDnsAlerts, 15000);
+
+// --- logjika ekzistuese për skanimin e phishing ---
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "scan_text") {
+    (async () => {
+      try {
+        const resp = await fetch("http://127.0.0.1:5000/api/scan_text", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message.payload)
+        });
+        const json = await resp.json();
+        json.label = json.final_label;
+        json.score = json.final_score;
+        sendResponse(json);
+      } catch (err) {
+        console.error("Background fetch error:", err);
+        sendResponse({ error: err.message });
+      }
+    })();
+    return true;
+  }
 });
