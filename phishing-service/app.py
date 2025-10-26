@@ -214,9 +214,12 @@ def scan_text():
 
         # -------------------- COMBINE ML + HEURISTICS --------------------
         if ml_score is not None:
-            final_score = (ml_score * 0.15) + (heuristic_score * 0.85)
+            final_score = (ml_score * 0.65) + (heuristic_score * 0.35)
         else:
             final_score = heuristic_score
+
+        print(f"[DEBUG] ML_RESULT -> score={ml_score:.4f}, label={ml_label}")
+        sys.stdout.flush()
 
         # -------------------- DNS ALERT CHECK --------------------
         alert_map = load_active_alerts_map(db)
@@ -263,6 +266,7 @@ def scan_text():
             "final_score": round(final_score, 4),
             "final_label": final_label,
             "ml_score": round(ml_score, 4) if ml_score is not None else None,
+            "ml_label": ml_label,
             "heuristic_score": round(heuristic_score, 4),
             "reasons": dedup_reasons,
             "urls": url_results,
