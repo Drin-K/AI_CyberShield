@@ -5,7 +5,7 @@ function extractEmail() {
   const bodyEl = document.querySelector('.ii') || {};
   const subject = subjectEl.innerText || "";
   const body = bodyEl.innerText || "";
-  return { subject, body };
+  return {subject, body};
 }
 function createBanner(result) {
   const oldBanner = document.getElementById("phishdetect-banner");
@@ -13,54 +13,68 @@ function createBanner(result) {
 
   const banner = document.createElement("div");
   banner.id = "phishdetect-banner";
-  banner.style.position = "relative";
-  banner.style.padding = "12px 16px";
-  banner.style.borderRadius = "8px";
-  banner.style.margin = "8px 0";
-  banner.style.fontFamily = "Arial, sans-serif";
-  banner.style.fontSize = "14px";
-  banner.style.display = "flex";
-  banner.style.alignItems = "center";
-  banner.style.justifyContent = "space-between";
-  banner.style.zIndex = "9999";
-  banner.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
-  banner.style.transition = "all 0.3s ease";
+
+    Object.assign(banner.style, {
+    position: "relative",
+    padding: "16px 20px",
+    borderRadius: "12px",
+    margin: "12px 0",
+    fontFamily: "Roboto, Arial, sans-serif",
+    fontSize: "15px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    zIndex: "9999",
+    boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
+    animation: "fadeIn 0.4s ease",
+    borderLeft: "5px solid"
+  });
 
   const left = document.createElement("div");
   const right = document.createElement("div");
   const msg = document.createElement("div");
 
   const score = result.final_score || result.score || 0;
-  let level = "safe";
-  let color = "#e6ffe6";
-  let border = "#7fd67f";
-  let text = `✅ <b style="color:#007500">Safe email.</b> — Likely legitimate.`
+  let color = "#e7f9ee";
+  let borderColor = "#1da660";
+  let icon = "✅";
+  let text = `<b style="color:#0d7a46">Safe email</b> — Likely legitimate.`;
 
   if (score >= 0.5 && score < 0.8) {
-    level = "warning";
-    color = "#fff3cd";
-    border = "#ffcc00";
-    text = `⚠️ <b style="color:#b38f00">Warning:</b> This email seems suspicious.`;
+    color = "#fff8e1";
+    borderColor = "#ffb300";
+    icon = "⚠️";
+    text = `<b style="color:#b38f00">Suspicious email</b> — Be cautious.`;
   } else if (score >= 0.8) {
-    level = "phishing";
-    color = "#ffe6e6";
-    border = "#ff8080";
-    text = `🚨 <b style="color:#b30000">Phishing detected!</b>`;
+    color = "#fdecea";
+    borderColor = "#e53935";
+    icon = "🚨";
+    text = `<b style="color:#b71c1c">Phishing attempt detected!</b>`;
   }
 
   banner.style.background = color;
-  banner.style.border = `1px solid ${border}`;
+  banner.style.borderLeftColor = borderColor;
 
-  msg.innerHTML = `${text}<br><b>Score:</b> ${score.toFixed(2)} — ${result.reasons?.join(", ") || ""}`;
+  msg.innerHTML = `${icon} ${text}<br>
+    <small><b>Score:</b> ${score.toFixed(2)} — ${result.reasons?.join(", ") || ""}</small>`;
+
 
   const closeBtn = document.createElement("button");
   closeBtn.textContent = "×";
-  closeBtn.style.border = "none";
-  closeBtn.style.background = "transparent";
-  closeBtn.style.cursor = "pointer";
-  closeBtn.style.fontSize = "18px";
-  closeBtn.style.marginLeft = "10px";
+  Object.assign(closeBtn.style, {
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: "20px",
+    marginLeft: "12px",
+    color: "#333",
+    transition: "transform 0.2s ease"
+  });
+
+  closeBtn.onmouseover = () => (closeBtn.style.transform = "scale(1.3)");
+  closeBtn.onmouseout = () => (closeBtn.style.transform = "scale(1)");
   closeBtn.onclick = () => banner.remove();
+
   left.appendChild(msg);
   right.appendChild(closeBtn);
   banner.appendChild(left);
@@ -69,7 +83,7 @@ function createBanner(result) {
   const container = document.querySelector(".aeH") || document.querySelector(".ii") || document.body;
   container.parentNode.insertBefore(banner, container);
 
-  console.log(`[PhishDetect] Banner shown: ${level.toUpperCase()} (score=${score})`);
+  console.log(`[PhishDetect] Banner displayed (${score.toFixed(2)})(score=${score})`);
 }
 
 function scanNow() {
@@ -98,15 +112,25 @@ function showDnsBanner(domain, score) {
 
   const banner = document.createElement("div");
   banner.id = "dns-banner";
-  banner.style.background = "#ffe6e6";
-  banner.style.border = "1px solid #ff8080";
-  banner.style.padding = "10px";
-  banner.style.margin = "8px 0";
-  banner.style.borderRadius = "6px";
-  banner.style.fontFamily = "Arial";
-  banner.style.zIndex = "9999";
-  banner.innerHTML = `⚠️ <b style="color:#b30000">DNS tunneling detected!</b><br>
-  Domain: <b>${domain}</b> — Score: ${score}`;
+
+  Object.assign(banner.style, {
+    background: "#fdecea",
+    border: "1px solid #e57373",
+    padding: "12px 16px",
+    margin: "10px 0",
+    borderRadius: "10px",
+    fontFamily: "Roboto, Arial, sans-serif",
+    fontSize: "14px",
+    zIndex: "9999",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    animation: "fadeIn 0.4s ease"
+  });
+
+  banner.innerHTML = `
+    ⚠️ <b style="color:#b71c1c">DNS tunneling detected!</b><br>
+    Domain: <b>${domain}</b><br>
+    Score: ${score}
+  `;
 
   const container = document.querySelector(".aeH") || document.body;
   container.parentNode.insertBefore(banner, container);
@@ -124,3 +148,5 @@ chrome.runtime.onMessage.addListener((msg) => {
 document.addEventListener("click", () => {
   setTimeout(scanNow, 800);
 });
+
+
