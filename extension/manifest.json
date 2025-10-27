@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PhishDetect Prototype",
+  "name": "AI CyberShield",
   "version": "0.2",
   "description": "Detects phishing emails inside Gmail and displays a banner above the email.",
   "permissions": ["activeTab", "scripting", "storage","notifications"],
