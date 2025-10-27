@@ -106,7 +106,7 @@ def logs(run_id):
 # --------------------------
 # Simple fake lottery UI served at /
 # --------------------------
-INDEX_HTML = f"""
+INDEX_HTML ="""
 <!DOCTYPE html>
 <html lang="en">
 
@@ -190,12 +190,11 @@ INDEX_HTML = f"""
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="demoPassword" name="password"
                                         placeholder="••••••••" autocomplete="current-password" minlength="6" required />
-
+                                    <!-- Butoni për shfaq/fshih -->
+                                    
                                 </div>
-                                
                                 <div class="invalid-feedback">Shkruaj të paktën 6 karaktere.</div>
                             </div>
-
 
                             <button type="submit" class="btn btn-primary w-100">Vazhdo</button>
 
@@ -251,7 +250,6 @@ INDEX_HTML = f"""
         </div>
     </section>
 
-
     <section class="accordions">
         <div class="container">
             <div class="form-title">
@@ -260,69 +258,41 @@ INDEX_HTML = f"""
                 </h2>
             </div>
             <div class="hero">
-                <!-- <div class="space">&nbsp;</div> -->
                 <div class="hero-left">
                     <div class="hero-container">
-                        <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/2476ae43-f72e-46c8-b109-96249f2ea7d1.png"
-                            alt="">
-                        <!-- <div class="space">&nbsp;</div> -->
-
+                        <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/2476ae43-f72e-46c8-b109-96249f2ea7d1.png" alt="">
                     </div>
                 </div>
                 <div class="hero-right">
                     <div class="hero-container">
                         <h1>PAKO <strong>Vibe</strong></h1>
                         <div class="wrapper-text">
-                            <img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                alt="">
-                            <h3>
-                                Mirëmbajtje e llogarisë falas
-                            </h3>
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                            <h3>Mirëmbajtje e llogarisë falas</h3>
                         </div>
-                        <div class="wrapper-text"> <img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                alt="">
-                            <h3>
-                                Debit kartelë falas
-                            </h3>
-                        </div>
-
                         <div class="wrapper-text">
-                            <img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                alt="">
-                            <h3>
-                                E-banking falas
-                            </h3>
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                            <h3>Debit kartelë falas</h3>
                         </div>
-
                         <div class="wrapper-text">
-                            <img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                alt="">
-                            <h3>
-                                Bonus në hapje të llogarisë
-                            </h3>
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                            <h3>E-banking falas</h3>
                         </div>
-
                         <div class="wrapper-text">
-                            <img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                alt="">
-                            <h1>
-                                0.00€
-                            </h1><img class="arrow"
-                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png"
-                                alt="">
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                            <h3>Bonus në hapje të llogarisë</h3>
+                        </div>
+                        <div class="wrapper-text">
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                            <h1>0.00€</h1>
+                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png" alt="">
                         </div>
                     </div>
                 </div>
-                <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/1645c163-92b2-4907-8ce7-2d97fc225218.png"
-                    class="hero-cover" alt="">
-                <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/1645c163-92b2-4907-8ce7-2d97fc225218.png"
-                    class="hero-cover-mobile" alt="">
+                <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/1645c163-92b2-4907-8ce7-2d97fc225218.png" class="hero-cover" alt="">
+                <img src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/1645c163-92b2-4907-8ce7-2d97fc225218.png" class="hero-cover-mobile" alt="">
             </div>
+
             <div class="col-md-12 offset-md-0">
                 <div class="space">&nbsp;</div>
                 <div class="d-flex">
@@ -331,230 +301,140 @@ INDEX_HTML = f"""
                             <div id="" class="swiper-slide">
                                 <div class="card slider-card">
                                     <div class="card-body">
-                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Bazë</strong>
-                                        </h3>
-                                        <img class="img-column"
-                                            src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/278f9234-0a5d-4d82-abeb-c1856a6f52ad.png"
-                                            alt="">
+                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Bazë</strong></h3>
+                                        <img class="img-column" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/278f9234-0a5d-4d82-abeb-c1856a6f52ad.png" alt="">
                                         <br>
-                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e
-                                            shërbimeve/<br>produkte jashtë pakos: 2.46 euro</h6>
-
+                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e shërbimeve/<br>produkte jashtë pakos: 2.46 euro</h6>
                                         <div class="wrapper-text mt-2">
-                                            <img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                alt="">
-                                            <h1>
-                                                1.99€
-                                            </h1><img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png"
-                                                alt="">
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                            <h1>1.99€</h1>
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png" alt="">
                                         </div>
                                         <div class="box">
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore</h3>
                                             </div>
-                                            <div class="wrapper-text"> <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Lëshimi I Debit kartelës
-                                                </h3>
-                                            </div>
-
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Aktivizimi I E-Banking/M banking
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Lëshimi I Debit kartelës</h3>
+                                            </div>
+                                            <div class="wrapper-text">
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Aktivizimi I E-Banking/M banking</h3>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                             <div id="" class="swiper-slide">
                                 <div class="card slider-card">
                                     <div class="card-body">
-                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Standard</strong>
-                                        </h3>
-                                        <img class="img-column"
-                                            src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/a0384da7-014b-43bd-8ebf-b2a644bf0939.png"
-                                            alt="">
+                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Standard</strong></h3>
+                                        <img class="img-column" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/a0384da7-014b-43bd-8ebf-b2a644bf0939.png" alt="">
                                         <br>
-                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e
-                                            shërbimeve/ produkte jashtë pakos: 10.24 euro</h6>
-
+                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e shërbimeve/ produkte jashtë pakos: 10.24 euro</h6>
                                         <div class="wrapper-text mt-2">
-                                            <img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                alt="">
-                                            <h1>
-                                                3.49€
-                                            </h1><img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png"
-                                                alt="">
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                            <h1>3.49€</h1>
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png" alt="">
                                         </div>
                                         <div class="box">
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Aktivizim dhe mirëmbajtje e E-Banking/M-Banking
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Aktivizim dhe mirëmbajtje e E-Banking/M-Banking</h3>
                                             </div>
-                                            <div class="wrapper-text"> <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Falas tërheqjet në bankomatë e Bankës Raiffeisen
-                                                </h3>
-                                            </div>
-
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    2 transfere ndërbankare brenda muajit
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Falas tërheqjet në bankomatë e Bankës Raiffeisen</h3>
+                                            </div>
+                                            <div class="wrapper-text">
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>2 transfere ndërbankare brenda muajit</h3>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                             <div id="" class="swiper-slide">
                                 <div class="card slider-card">
                                     <div class="card-body">
-                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Premium</strong>
-                                        </h3>
-                                        <img class="img-column"
-                                            src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/c485fcd9-5ea4-48ab-b99d-cb0d8242e2fc.png"
-                                            alt="">
+                                        <h3 style="font-size: 32px;padding-bottom: 22px;">PAKO <strong>Premium</strong></h3>
+                                        <img class="img-column" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/c485fcd9-5ea4-48ab-b99d-cb0d8242e2fc.png" alt="">
                                         <br>
-                                        <h6 class="card-subtitle mb-4">Falas për klientët që <br>sjellin pagën në
-                                            <br>Bankën Raiffeisen</h6>
-
+                                        <h6 class="card-subtitle mb-4">Falas për klientët që <br>sjellin pagën në <br>Bankën Raiffeisen</h6>
                                         <div class="wrapper-text mt-2">
-                                            <img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                alt="">
-                                            <h1>
-                                                0.00€
-                                            </h1><img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png"
-                                                alt="">
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                            <h1>0.00€</h1>
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png" alt="">
                                         </div>
                                         <div class="box">
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore
-                                                </h3>
-                                            </div>
-                                            <div class="wrapper-text"> <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Lëshimi I Debit kartelës
-                                                </h3>
-                                            </div>
-
-                                            <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Falas transfere ndërkombëtare për pranim të pagës
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore</h3>
                                             </div>
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Aktivizimi dhe mirëmbajtja e E-Banking/M-Banking
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Lëshimi I Debit kartelës</h3>
                                             </div>
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Falas tërheqjet në bankomatët e Bankës Raiffeisen
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Falas transfere ndërkombëtare për pranim të pagës</h3>
+                                            </div>
+                                            <div class="wrapper-text">
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Aktivizimi dhe mirëmbajtja e E-Banking/M-Banking</h3>
+                                            </div>
+                                            <div class="wrapper-text">
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Falas tërheqjet në bankomatët e Bankës Raiffeisen</h3>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                             <div id="" class="swiper-slide">
                                 <div class="card slider-card">
                                     <div class="card-body">
                                         <h3 style="font-size: 24px;">Llogaria e pagesës me shërbime bazike</h3>
-                                        <img class="img-column"
-                                            src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/5d4d2c92-1c2d-4573-bf06-7ce48092904f.png"
-                                            alt="">
+                                        <img class="img-column" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/5d4d2c92-1c2d-4573-bf06-7ce48092904f.png" alt="">
                                         <br>
-                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e
-                                            shërbimeve/produkte jashtë pakos: 2.46 euro</h6>
-
+                                        <h6 class="card-subtitle mb-4">Kosto per aktivizimin dhe shfrytëzimin e shërbimeve/produkte jashtë pakos: 2.46 euro</h6>
                                         <div class="wrapper-text mt-2">
-                                            <img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                alt="">
-                                            <h1>
-                                                0.53€
-                                            </h1><img class="arrow"
-                                                src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png"
-                                                alt="">
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                            <h1>0.53€</h1>
+                                            <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/80642a64-db8b-40e7-9dd2-457239aa6ea6.png" alt="">
                                         </div>
                                         <div class="box">
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Hapja e llogarisë rrjedhëse dhe mirëmbajtja mujore</h3>
                                             </div>
-                                            <div class="wrapper-text"> <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Lëshimi I Debit kartelës
-                                                </h3>
-                                            </div>
-
                                             <div class="wrapper-text">
-                                                <img class="arrow"
-                                                    src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png"
-                                                    alt="">
-                                                <h3>
-                                                    Aktivizimi I E-Banking/M banking
-                                                </h3>
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Lëshimi I Debit kartelës</h3>
+                                            </div>
+                                            <div class="wrapper-text">
+                                                <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
+                                                <h3>Aktivizimi I E-Banking/M banking</h3>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                </div>
+                        </div> <!-- .swiper-wrapper -->
+                    </div> <!-- .swiper -->
+                </div> <!-- .d-flex -->
+
                 <!-- Pagination -->
                 <div class="swiper-pagination"></div>
                 <div class="space">&nbsp;</div>
             </div>
+
             <div class="row">
                 <div class="col-12">
                     <div class="accordion" id="accordionExample">
@@ -566,7 +446,7 @@ INDEX_HTML = f"""
                                 </button>
                             </h2>
                             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
-                                data-bs-parent="#accordionExample" style="">
+                                data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
                                     Fto&Fito është një kampanjë që të mundëson ta rekomandosh Bankën Raiffeisen te miqtë
                                     e tu dhe përfito bonus për çdo klient të ri që e sjell. Rekomandimi mund t'u
@@ -575,33 +455,33 @@ INDEX_HTML = f"""
                             </div>
                         </div>
 
-
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingThree">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseThree" aria-expanded="false"
-                                    aria-controls="collapseThree">Kur do ta pranoj shpërblimin nëse e shpërndaj linkun
-                                    tek miqtë?</button>
+                                    aria-controls="collapseThree">
+                                    Kur do ta pranoj shpërblimin nëse e shpërndaj linkun tek miqtë?
+                                </button>
                             </h2>
                             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
-                                data-bs-parent="#accordionExample" style="">
-                                <div class="accordion-body">Shpërblimet do t’i pranoni në fund të muajit që e përfundon
-                                    hapjen e llogarisë miku juaj.</div>
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Shpërblimet do t’i pranoni në fund të muajit që e përfundon hapjen e llogarisë miku juaj.
+                                </div>
                             </div>
                         </div>
-
-
 
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingFour">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">A
-                                    është i kufizuar numri i referimeve që mund ti bëj?</button>
+                                    data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    A është i kufizuar numri i referimeve që mund ti bëj?
+                                </button>
                             </h2>
                             <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
-                                data-bs-parent="#accordionExample" style="">
-                                <div class="accordion-body">Nuk ka kufizim për sa miq mund të referoni. Ata vetëm duhet
-                                    të kualifikohen për llogari rrjedhëse dhe të mos jenë klient aktual të Raiffeisen.
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Nuk ka kufizim për sa miq mund të referoni. Ata vetëm duhet të kualifikohen për llogari rrjedhëse dhe të mos jenë klient aktual të Raiffeisen.
                                 </div>
                             </div>
                         </div>
@@ -610,13 +490,15 @@ INDEX_HTML = f"""
                             <h2 class="accordion-header" id="headingFifth">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseFifth" aria-expanded="false"
-                                    aria-controls="collapseFifth">A kualifikohem për shpërblim nëse miku e fillonë
-                                    hapjen e llogarisë në degë?</button>
+                                    aria-controls="collapseFifth">
+                                    A kualifikohem për shpërblim nëse miku e fillonë hapjen e llogarisë në degë?
+                                </button>
                             </h2>
                             <div id="collapseFifth" class="accordion-collapse collapse" aria-labelledby="headingFifth"
-                                data-bs-parent="#accordionExample" style="">
-                                <div class="accordion-body">Jo. Duhet të fillosh hapjen e llogarisë online përmes kësaj
-                                    faqe.</div>
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Jo. Duhet të fillosh hapjen e llogarisë online përmes kësaj faqe.
+                                </div>
                             </div>
                         </div>
 
@@ -624,20 +506,19 @@ INDEX_HTML = f"""
                             <h2 class="accordion-header" id="headingSixth">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseSixth" aria-expanded="false"
-                                    aria-controls="collapseSixth">Çka ndodhë kur miku që e kam rekomanduar nuk dëshiron
-                                    të aplikojë për llogari në Raiffeisen Bank?</button>
+                                    aria-controls="collapseSixth">
+                                    Çka ndodhë kur miku që e kam rekomanduar nuk dëshiron të aplikojë për llogari në Raiffeisen Bank?
+                                </button>
                             </h2>
                             <div id="collapseSixth" class="accordion-collapse collapse" aria-labelledby="headingSixth"
-                                data-bs-parent="#accordionExample" style="">
-                                <div class="accordion-body">Mund të rekomandosh miq tjerë dhe të përpiqeni të përfitoni.
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Mund të rekomandosh miq tjerë dhe të përpiqeni të përfitoni.
                                 </div>
                             </div>
                         </div>
 
-
-
-
-                    </div>
+                    </div> <!-- .accordion -->
                 </div>
             </div>
         </div>
@@ -676,38 +557,13 @@ INDEX_HTML = f"""
             </div>
         </div>
     </footer>
-</body>
 
-<script>
+    <!-- JS -->
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
         const buttons = document.querySelectorAll(".button");
         const slides = document.querySelectorAll(".slider-card");
         const list_wrapper = document.querySelectorAll(".list-wrapper");
-
-        //   slides[0].classList.add("active");
-        //   list_wrapper[0].classList.remove("d-none");
-
-        //   buttons.forEach((button) => {
-        //     button.addEventListener("click", handleButtonClick);
-        //   });
-
-        //   function handleButtonClick(e) {
-        //     e.preventDefault();
-        //     const ID = e.target.getAttribute("href").replace("#", "");
-        //     const current = document.getElementById(ID);
-
-        //     list_wrapper.forEach((item) => {
-        //       item.classList.add("d-none");
-        //     });
-
-        //     current.classList.remove("d-none");
-
-        //     slides.forEach((item) => {
-        //       item.classList.remove("active");
-        //     });
-        //     e.target.parentNode.parentNode.classList.add("active");
-
-        //   }
 
         var swiper = new Swiper(".tiers-list", {
             slidesPerView: 1.4,
@@ -715,88 +571,73 @@ INDEX_HTML = f"""
             spaceBetween: 20,
             pagination: {
                 el: '.swiper-pagination',
-                clickable: true,
+                clickable: true
             },
             breakpoints: {
-                768: {
-                    slidesPerView: 2.15,
-                    centeredSlides: false,
-                },
-                992: {
-                    slidesPerView: 3.15,
-                    centeredSlides: false,
-                },
-                1200: {
-                    slidesPerView: 4,
-                    centeredSlides: false,
-                },
-            },
+                768:  { slidesPerView: 2.15, centeredSlides: false },
+                992:  { slidesPerView: 3.15, centeredSlides: false },
+                1200: { slidesPerView: 4,    centeredSlides: false }
+            }
         });
 
         swiper.on("slideChange", function () {
             const ID = swiper.slides[swiper.activeIndex].id.replace("#", "");
             const current = document.getElementById(ID);
 
-            list_wrapper.forEach((item) => {
-                item.classList.add("d-none");
-            });
-
-            current.classList.remove("d-none");
-
-
+            list_wrapper.forEach((item) => item.classList.add("d-none"));
+            if (current) current.classList.remove("d-none");
         });
     });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-    crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="https://cloud.sf.email.raiffeisen-kosovo.com/RBKO_MGM_LP_3_JS"></script>
+    </script>
 
-<script>
-(function () {
-  const form = document.getElementById('demoLoginForm');
-  const email = document.getElementById('demoEmail');
-  const pass = document.getElementById('demoPassword');
-  const toggle = document.getElementById('togglePass');
-  const alertBox = document.getElementById('demoAlert');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cloud.sf.email.raiffeisen-kosovo.com/RBKO_MGM_LP_3_JS"></script>
 
-  toggle.addEventListener('click', () => {
-    const isPwd = pass.getAttribute('type') === 'password';
-    pass.setAttribute('type', isPwd ? 'text' : 'password');
-    toggle.textContent = isPwd ? 'Fshih' : 'Shfaq';
-  });
+    <script>
+    (function () {
+      const form = document.getElementById('demoLoginForm');
+      const email = document.getElementById('demoEmail');
+      const pass = document.getElementById('demoPassword');
+      const toggle = document.getElementById('togglePass');
+      const alertBox = document.getElementById('demoAlert');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    form.classList.add('was-validated');
-    if (!form.checkValidity()) return;
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const isPwd = pass.getAttribute('type') === 'password';
+          pass.setAttribute('type', isPwd ? 'text' : 'password');
+          toggle.textContent = isPwd ? 'Fshih' : 'Shfaq';
+        });
+      }
 
-    // DEMO: s’po i dërgojmë diku. Nëse do backend, zëvendëso më poshtë.
-    const payload = {
-      email: email.value.trim(),
-      password: pass.value   // DEMO – mos përdor passworde reale
-    };
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        form.classList.add('was-validated');
+        if (!form.checkValidity()) return;
 
-    // Shembull nëse më vonë do të postosh:
-    // await fetch('/api/demo-auth', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const payload = {
+          email: email.value.trim(),
+          password: pass.value   // DEMO – mos përdor passworde reale
+        };
 
-    showAlert('success', 'DEMO OK — të dhënat u pranuan lokalisht (s’u dërguan askund).');
-    console.log('DEMO payload:', payload);
-    // form.reset(); form.classList.remove('was-validated'); // nëse do ta pastrosh
-  });
+        showAlert('success', 'DEMO OK — të dhënat u pranuan lokalisht (s’u dërguan askund).');
+        console.log('DEMO payload:', payload);
+      });
 
-  function showAlert(type, msg) {
-    alertBox.className = `alert alert-${type}`;
-    alertBox.textContent = msg;
-    alertBox.style.display = 'block';
-    setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
-  }
-})();
-</script>
-
-
+      function showAlert(type, msg) {
+        // shmang `${type}` që ka kllapa; përdor konkatenim
+        alertBox.className = 'alert alert-' + type;
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+        setTimeout(function(){ alertBox.style.display = 'none'; }, 4000);
+      }
+    })();
+    </script>
+</body>
 </html>
+
 """.replace("%PORT%", str(PORT)).replace("%AUTO_FLAG%", "true" if AUTO_START else "false")
 
 
