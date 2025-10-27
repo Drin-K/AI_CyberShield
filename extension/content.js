@@ -31,11 +31,11 @@ const injectStyles = (() => {
 .phd-close{border:none;background:transparent;cursor:pointer;font-size:18px;width:36px;height:36px;border-radius:10px;display:inline-grid;place-items:center;transition:transform 220ms cubic-bezier(.2,.9,.3,1),box-shadow 180ms}
 .phd-close:hover{transform:scale(1.18) rotate(8deg);box-shadow:0 6px 18px rgba(0,0,0,0.12)}
 .phd-close:active{transform:scale(.92) rotate(-6deg)}
-.phd-left{display:flex;gap:12px;align-items:center;flex:1 1 auto;min-width:0}
-.phd-icon{width:56px;height:56px;min-width:56px;border-radius:12px;display:grid;place-items:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,0.06);flex-shrink:0}
-.phd-msg{min-width:0}
-.phd-title{font-weight:700;font-size:15px;letter-spacing:-0.2px;margin-bottom:4px}
-.phd-sub{font-size:13px;opacity:0.85;color:#222;line-height:1.18}
+.phd-left{display:flex;gap:25px;align-items:center;flex:1 1 auto;min-width:0} 
+.phd-icon{width:56px;height:56px;min-width:56px;border-radius:12px;display:grid;place-items:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,0.06);flex-shrink:0;margin-left:8px} /* Shtuar margin-left: 8px */
+.phd-msg{min-width:0;flex:1}
+.phd-title{font-weight:700;font-size:17px;letter-spacing:-0.2px;margin-bottom:4px}
+.phd-sub{font-size:14px;opacity:0.85;color:#222;line-height:1.18}
 .phd-meter{width:160px;min-width:120px;max-width:220px;margin-left:12px;display:flex;flex-direction:column;gap:8px;align-items:stretch;flex-shrink:0}
 .phd-meter .label{font-size:12px;opacity:0.8}
 .phd-bar{height:10px;width:100%;background:rgba(0,0,0,0.06);border-radius:999px;overflow:hidden;box-shadow:inset 0 -1px 0 rgba(255,255,255,0.15)}
@@ -54,7 +54,10 @@ const injectStyles = (() => {
 @keyframes phd-modal-in{from{transform:translateY(8px) scale(.995);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 .phd-modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
 .phd-modal-body{font-size:14px;color:#222;line-height:1.45;margin-top:8px;max-height:58vh;overflow:auto}
-@media (max-width:640px){.phd-card{flex-direction:column;align-items:stretch;gap:10px;padding:12px}.phd-meter{width:100%;max-width:none;order:3}.phd-actions{margin-left:0;justify-content:flex-end}}
+.phd-modal-header div{font-weight:800;font-size:18px}
+.signals-title{font-size:15px;font-weight:600;margin-top:12px;margin-bottom:8px}
+.signals-li{font-size:14px;margin-bottom:6px;line-height:1.4}
+@media (max-width:640px){.phd-card{flex-direction:column;align-items:stretch;gap:10px;padding:12px}.phd-meter{width:100%;max-width:none;order:3}.phd-actions{margin-left:0;justify-content:flex-end}.phd-title{font-size:16px}.phd-sub{font-size:13px}.phd-left{gap:12px}}
 `;
     document.head.appendChild(s);
   };
@@ -118,8 +121,8 @@ const createBanner = (result = {}) => {
     const title = create("div", { class: "phd-title", innerHTML: meta.title });
     const sub = create("div", { class: "phd-sub", innerHTML: `${meta.sub} <span style="opacity:.9">Score: <b>${score.toFixed(2)}</b></span>` });
     const reasonsText = (Array.isArray(result.reasons) && result.reasons.length) ? result.reasons.join(", ") : (result.reasons || "");
-    const reasonEl = create("div", { class: "phd-sub", style: { fontSize: "12px", opacity: 0.85, marginTop: "6px" } });
-    reasonEl.innerHTML = reasonsText ? `<small>Signals: ${escapeHtml(reasonsText)}</small>` : `<small>No notable signals.</small>`;
+    const reasonEl = create("div", { class: "phd-sub", style: { fontSize: "14px", opacity: 0.85, marginTop: "6px" } });
+    reasonEl.innerHTML = reasonsText ? `Signals: ${escapeHtml(reasonsText)}` : `No notable signals.`;
     msg.appendChild(title);
     msg.appendChild(sub);
     msg.appendChild(reasonEl);
@@ -136,9 +139,10 @@ const createBanner = (result = {}) => {
     meter.appendChild(label);
     meter.appendChild(bar);
     const actions = create("div", { class: "phd-actions" });
-    const learnBtn = create("button", { class: "phd-btn phd-learn", type: "button", "aria-label": "Learn more about this detection", onClick: () => openModal(result) }, [create("span", {}, ["Learn more 🔎"])]);
-    const dismissBtn = create("button", { class: "phd-close", "aria-label": "Dismiss PhishDetect banner", onClick: () => { dismissBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.18) rotate(14deg)" }, { transform: "scale(0)" }], { duration: 320, easing: "cubic-bezier(.2,.9,.3,1)" }); setTimeout(() => root.remove(), 320); } }, ["✕"]);
-    actions.appendChild(learnBtn);
+    const dismissBtn = create("button", { class: "phd-close", "aria-label": "Dismiss PhishDetect banner", onClick: () => { 
+      dismissBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.18) rotate(14deg)" }, { transform: "scale(0)" }], { duration: 320, easing: "cubic-bezier(.2,.9,.3,1)" }); 
+      setTimeout(() => root.remove(), 320); 
+    } }, ["✕"]);
     actions.appendChild(dismissBtn);
     right.appendChild(meter);
     right.appendChild(actions);
@@ -163,7 +167,6 @@ const showDnsBanner = (domain = "unknown", score = 0) => {
   if (typeof domain !== "string") domain = String(domain || "unknown");
   if (shownDnsDomains.has(domain)) return;
   shownDnsDomains.add(domain);
-  // removeExistingBannerAndModal(); // ❌ remove this line to preserve phishing banner
   injectStyles();
   const root = create("div", { id: "dns-banner", style: { display: "flex", justifyContent: "center", pointerEvents: "auto" } });
   const card = create("div", { class: "phd-card phd-phish", role: "alert", "aria-live": "assertive" });
@@ -189,7 +192,6 @@ const showDnsBanner = (domain = "unknown", score = 0) => {
   root.id = "dns-banner";
 };
 
-
 const openModal = (result = {}) => {
   injectStyles();
   let overlay = document.getElementById("phishdetect-modal-overlay");
@@ -201,21 +203,24 @@ const openModal = (result = {}) => {
   overlay.innerHTML = "";
   const modal = create("div", { id: "phishdetect-modal" });
   const header = create("div", { class: "phd-modal-header" });
-  const title = create("div", { style: { fontWeight: 800, fontSize: "16px" } }, ["Why this email is flagged"]);
+  const title = create("div", { style: { fontWeight: 800, fontSize: "18px" } }, ["Why this email is flagged"]);
   const close = create("button", { class: "phd-close", onClick: () => { overlay.style.display = "none"; overlay.innerHTML = ""; } }, ["✕"]);
   header.appendChild(title);
   header.appendChild(close);
   const body = create("div", { class: "phd-modal-body" });
   const score = Number(result.final_score ?? result.score ?? 0);
   const reasons = Array.isArray(result.reasons) ? result.reasons : (result.reasons ? [result.reasons] : []);
-  body.appendChild(create("div", { style: { marginBottom: "6px", fontSize: "13px", opacity: 0.9 } }, [`Score: ${score.toFixed(2)} — ${score >= 0.8 ? "High risk" : score >= 0.5 ? "Potential risk" : "Likely safe"}`]));
+  body.appendChild(create("div", { style: { marginBottom: "6px", fontSize: "14px", opacity: 0.9 } }, [`Score: ${score.toFixed(2)} — ${score >= 0.8 ? "High risk" : score >= 0.5 ? "Potential risk" : "Likely safe"}`]));
   if (reasons.length) {
-    body.appendChild(create("div", { style: { fontWeight: 700, marginTop: "6px", marginBottom: "6px" } }, ["Signals we found:"]));
+    body.appendChild(create("div", { 
+      class: "signals-title"
+    }, ["Signals we found:"]));
+
     const ul = create("ul");
-    reasons.forEach(r => ul.appendChild(create("li", { style: { marginBottom: "6px", fontSize: "13px" } }, [escapeHtml(r)])));
+    reasons.forEach(r => ul.appendChild(create("li", { class: "signals-li" }, [escapeHtml(r)])));
     body.appendChild(ul);
   } else {
-    body.appendChild(create("div", { style: { fontSize: "13px", opacity: 0.9 } }, ["No detailed signals were returned by the scanner."]));
+    body.appendChild(create("div", { style: { fontSize: "14px", opacity: 0.9 } }, ["No detailed signals were returned by the scanner."]));
   }
   if (result.raw_input || result.debug) {
     const dbg = create("details", { style: { marginTop: "10px", fontSize: "13px" } });
