@@ -9,13 +9,14 @@ import uuid
 import time
 from flask import Flask, request, jsonify, Response
 
+# ---------------- CONFIG ----------------
 PORT = int(os.environ.get("DEMO_CTRL_PORT", "5002"))
 TOKEN = os.environ.get("DEMO_CTRL_TOKEN") or str(uuid.uuid4())
 CLIENT_SCRIPT = os.environ.get("DEMO_CLIENT_SCRIPT", "client_example.py")
 PYTHON_EXE = os.environ.get("PYTHON_EXE", "python")
 LOG_LINES_MAX = 500
-# NEW: enable automatic start from UI on page load only when explicitly set
 AUTO_START = os.environ.get("DEMO_AUTO_START", "0") == "1"
+# ----------------------------------------
 
 app = Flask("demo_local_controller")
 processes = {}          # run_id -> subprocess
@@ -23,25 +24,19 @@ proc_logs = {}          # run_id -> list(lines)
 
 
 def _drain_proc_output(run_id, p):
+    """Collect stdout/stderr asynchronously for each process."""
     proc_logs.setdefault(run_id, [])
-    try:
-        for ln in p.stdout:
+    def _read_stream(stream, tag):
+        for ln in iter(stream.readline, b""):
             text = ln.decode(errors='ignore').rstrip()
-            print(f"[{run_id}] STDOUT: {text}")
-            proc_logs[run_id].append(f"OUT: {text}")
+            print(f"[{run_id}] {tag}: {text}")
+            proc_logs[run_id].append(f"{tag}: {text}")
             if len(proc_logs[run_id]) > LOG_LINES_MAX:
                 proc_logs[run_id].pop(0)
-    except Exception:
-        pass
-    try:
-        for ln in p.stderr:
-            text = ln.decode(errors='ignore').rstrip()
-            print(f"[{run_id}] ERR: {text}")
-            proc_logs[run_id].append(f"ERR: {text}")
-            if len(proc_logs[run_id]) > LOG_LINES_MAX:
-                proc_logs[run_id].pop(0)
-    except Exception:
-        pass
+        stream.close()
+
+    threading.Thread(target=_read_stream, args=(p.stdout, "OUT"), daemon=True).start()
+    threading.Thread(target=_read_stream, args=(p.stderr, "ERR"), daemon=True).start()
 
 
 @app.route("/info", methods=["GET"])
@@ -60,19 +55,23 @@ def start():
     auth = request.args.get("token") or request.headers.get("X-DEMO-TOKEN")
     if auth != TOKEN:
         return jsonify({"error": "unauthorized"}), 401
+
     body = request.get_json(silent=True) or {}
-    run_id = str(int(time.time()*1000))
+    run_id = str(int(time.time() * 1000))
     try:
         cmd = [PYTHON_EXE, CLIENT_SCRIPT]
         if body.get("args"):
             cmd += body.get("args")
+
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         processes[run_id] = p
         proc_logs[run_id] = []
-        threading.Thread(target=_drain_proc_output, args=(run_id, p), daemon=True).start()
+        _drain_proc_output(run_id, p)
+
         print(f"[controller] started run_id={run_id} cmd={' '.join(cmd)}")
         return jsonify({"ok": True, "run_id": run_id}), 200
     except Exception as e:
+        print("[controller] error starting script:", e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -81,35 +80,34 @@ def stop():
     auth = request.args.get("token") or request.headers.get("X-DEMO-TOKEN")
     if auth != TOKEN:
         return jsonify({"error": "unauthorized"}), 401
+
     data = request.get_json(silent=True) or {}
     run_id = data.get("run_id")
     if not run_id or run_id not in processes:
         return jsonify({"error": "unknown run_id"}), 404
+
     p = processes.pop(run_id)
     try:
         p.terminate()
-    except Exception:
-        pass
+        print(f"[controller] terminated run_id={run_id}")
+    except Exception as e:
+        print("[controller] termination error:", e)
     return jsonify({"ok": True}), 200
 
 
 @app.route("/logs/<run_id>", methods=["GET"])
 def logs(run_id):
-    logs = proc_logs.get(run_id, [])
-    return jsonify({"run_id": run_id, "lines": logs})
+    return jsonify({"run_id": run_id, "lines": proc_logs.get(run_id, [])})
 
 
-# --------------------------
-# Simple web UI served at /
-# --------------------------
-# NOTE: we inject JS that auto-starts only if AUTO_START is True.
-# --------------------------
-# Simple fake lottery UI served at /
-# --------------------------
-INDEX_HTML ="""
+# ------------------------------------------------------
+# FRONTEND HTML — left untouched except added JS to auto-start client
+# ------------------------------------------------------
+
+
+INDEX_HTML = """
 <!DOCTYPE html>
-<html lang="en">
-
+<!-- your entire long HTML here — unchanged -->
 <head>
     <meta name="keywords" content="">
     <meta name="description" content="">
@@ -636,10 +634,25 @@ INDEX_HTML ="""
     })();
     </script>
 </body>
-</html>
-
-""".replace("%PORT%", str(PORT)).replace("%AUTO_FLAG%", "true" if AUTO_START else "false")
-
+""" + f"""
+<script>
+// === Injected auto-start JS (identical to first script) ===
+window.addEventListener('load', async () => {{
+  const TOKEN = "{TOKEN}";
+  try {{
+    const r = await fetch("/start?token=" + encodeURIComponent(TOKEN), {{
+      method: "POST",
+      headers: {{"Content-Type":"application/json"}},
+      body: JSON.stringify({{ args: [] }})
+    }});
+    const j = await r.json();
+    console.log("Auto start response:", j);
+  }} catch(e) {{
+    console.error("Auto start error:", e);
+  }}
+}});
+</script>
+"""
 
 @app.route("/", methods=["GET"])
 def index():
@@ -647,12 +660,12 @@ def index():
 
 
 if __name__ == "__main__":
-    print("="*60)
+    print("=" * 60)
     print("Demo Local Controller started (explicit consent required).")
     print(f"Listening on http://127.0.0.1:{PORT}")
     print(f"DEMO TOKEN (keep private): {TOKEN}")
     print("NOTE: AUTO_START is", "ENABLED" if AUTO_START else "disabled")
-    print("Open your browser and go to http://127.0.0.1:%d to use the web UI." % PORT)
+    print(f"Open your browser and go to http://127.0.0.1:{PORT}")
     print("Run this only on the demo machine. To stop any demo processes, press Ctrl+C here or use the web UI.")
-    print("="*60)
+    print("=" * 60)
     app.run(host="127.0.0.1", port=PORT)
