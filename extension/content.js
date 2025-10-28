@@ -9,7 +9,7 @@ const create = (t, a = {}, children = []) => {
   const e = document.createElement(t);
   Object.entries(a).forEach(([k, v]) => {
     if (k === "style") Object.assign(e.style, v);
-    else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
+    else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2).toLowerCase(), v);
     else e.setAttribute(k, v);
   });
   children.forEach(c => typeof c === "string" ? e.appendChild(document.createTextNode(c)) : e.appendChild(c));
@@ -110,7 +110,7 @@ const createBanner = (result = {}) => {
       phish: { icon: "🚨", title: "Phishing attempt detected!", sub: "High risk — do not click links or reply.", ic: "phish", cc: "phd-phish" }
     };
     const meta = map[severity];
-    const root = create("div", { id: "phishdetect-banner", style: { display: "flex", justifyContent: "center", pointerEvents: "auto" } });
+    const root = create("div", { id: "phishdetect-banner", style: { display: "flex", justifyContent: "center", pointerEvents: "auto"} });
     const card = create("div", { class: `phd-card ${meta.cc}`, role: "status", "aria-live": "polite" });
     card.style.animation = "phd-fade-slide 420ms ease both";
     const left = create("div", { class: "phd-left" });
@@ -139,10 +139,25 @@ const createBanner = (result = {}) => {
     meter.appendChild(label);
     meter.appendChild(bar);
     const actions = create("div", { class: "phd-actions" });
-    const dismissBtn = create("button", { class: "phd-close", "aria-label": "Dismiss PhishDetect banner", onClick: () => { 
-      dismissBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.18) rotate(14deg)" }, { transform: "scale(0)" }], { duration: 320, easing: "cubic-bezier(.2,.9,.3,1)" }); 
-      setTimeout(() => root.remove(), 320); 
-    } }, ["✕"]);
+    // Create the button normally (no "onClick" prop)
+// Create the button
+const dismissBtn = create("button", {
+  class: "phd-close",
+  "aria-label": "Dismiss PhishDetect banner"
+}, ["✕"]);
+
+// Attach a capture-phase click listener (fires before Gmail)
+dismissBtn.addEventListener("click", (ev) => {
+  ev.preventDefault();
+  ev.stopPropagation();
+  ev.stopImmediatePropagation();
+
+  const banner = dismissBtn.closest('#phishdetect-banner');
+  if (banner) banner.remove();
+
+  lastScannedEmailId = null;
+}, { capture: true }); // <— THIS makes it one-click guaranteed
+
     actions.appendChild(dismissBtn);
     right.appendChild(meter);
     right.appendChild(actions);
