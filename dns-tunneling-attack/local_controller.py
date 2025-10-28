@@ -172,7 +172,7 @@ INDEX_HTML = """
                     <div class="mid-element">
                         <!-- DEMO: MOS PËRDOR KREDENCIALË REALË  -->
                         <div class="alert alert-warning mb-3" role="alert">
-                            Me poshte shkruani informcaionet e kerkuara:
+                            Më poshtë shkruani informacionet e kerkuara:
                         </div>
 
                         <form class="form-ref" id="demoLoginForm" novalidate>
@@ -227,7 +227,7 @@ INDEX_HTML = """
                         <div class="list-content">
                             <p>
                                 Secili nga miqtë e tu gjatë hapjes së llogarisë mund të përzgjedhin Pakon të cilën e
-                                dëshirojnë me përfitime të ndryshme varësishtë nga lloji i Pako-s.
+                                dëshirojnë me përfitime të ndryshme varësisht nga lloji i Pako-s.
                             </p>
                         </div>
                     </div>
@@ -345,7 +345,7 @@ INDEX_HTML = """
                                             </div>
                                             <div class="wrapper-text">
                                                 <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
-                                                <h3>Falas tërheqjet në bankomatë e Bankës Raiffeisen</h3>
+                                                <h3>Falas tërheqjet në bankomatët e Bankës Raiffeisen</h3>
                                             </div>
                                             <div class="wrapper-text">
                                                 <img class="arrow" src="https://image.sf.email.raiffeisen-kosovo.com/lib/fe3a11717564047c711d71/m/1/4fac711d-4bb3-47ad-b124-4161ad6c658a.png" alt="">
@@ -479,7 +479,7 @@ INDEX_HTML = """
                             <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
                                 data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    Nuk ka kufizim për sa miq mund të referoni. Ata vetëm duhet të kualifikohen për llogari rrjedhëse dhe të mos jenë klient aktual të Raiffeisen.
+                                    Nuk ka kufizim për sa miq mund të referoni. Ata vetëm duhet të kualifikohen për llogari rrjedhëse dhe të mos jenë klientë aktual të Raiffeisen.
                                 </div>
                             </div>
                         </div>
