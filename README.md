@@ -48,7 +48,7 @@ By integrating both detection engines, the system forms a **unified, AI-driven d
 | **Phishing Detection** | Logistic Regression + TF-IDF |
 | **DNS Detection** | Random Forest Classifier |
 | **Backend** | Flask / FastAPI |
-| **Database** | MongoDB / SQLite |
+| **Database** | PostgreSQL |
 | **UI** | Gmail Extension |
 | **Integration** | SOC Reporting System |
 
