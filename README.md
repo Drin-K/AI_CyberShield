@@ -1,6 +1,9 @@
 # **AI CyberShield**
 ### *Dual-Layer Cyber Defense: Phishing Detection + DNS Tunneling Detection*
 
+🏆 **Achievement:**  
+This project earned **Second Place** at the **AI Hackathon 2025**, organized by **Raiffeisen Bank** in collaboration with **Microsoft**.
+
 ---
 
 ## **Overview**
